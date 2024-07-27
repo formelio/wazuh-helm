@@ -1,0 +1,33 @@
+{{- $replica_set := (include "wazuh-indexer.fullname" $) -}}
+{{- $master_node := printf "%v-0" $replica_set -}}
+cluster.name: ${CLUSTER_NAME}
+node.name: ${NODE_NAME}
+network.host: ${NETWORK_HOST}
+discovery.seed_hosts: {{ $master_node}}.{{ $replica_set }}
+cluster.initial_master_nodes:
+  - {{ $master_node }}
+
+node.max_local_storage_nodes: "2"
+path.data: /var/lib/wazuh-indexer
+path.logs: /var/log/wazuh-indexer
+plugins.security.ssl.http.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
+plugins.security.ssl.http.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
+plugins.security.ssl.http.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.transport.pemcert_filepath: /usr/share/wazuh-indexer/certs/node.pem
+plugins.security.ssl.transport.pemkey_filepath: /usr/share/wazuh-indexer/certs/node-key.pem
+plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/wazuh-indexer/certs/root-ca.pem
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.transport.enforce_hostname_verification: false
+plugins.security.ssl.transport.resolve_hostname: false
+plugins.security.authcz.admin_dn:
+  - {{ include "wazuh.dn" (dict "Values" .Values "cn" "wazuh-indexer-admin") }}
+plugins.security.check_snapshot_restore_write_privileges: true
+plugins.security.enable_snapshot_restore_privilege: true
+plugins.security.nodes_dn:
+  - {{ include "wazuh.dn" (dict "Values" .Values "cn" "wazuh-indexer-node") }}
+plugins.security.restapi.roles_enabled:
+- "all_access"
+- "security_rest_api_access"
+plugins.security.allow_default_init_securityindex: true
+cluster.routing.allocation.disk.threshold_enabled: false
+compatibility.override_main_response_version: true

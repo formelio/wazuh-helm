@@ -1,0 +1,11 @@
+global:
+  # Example subject to insert into certificates, override with your own values
+  certificateSubject:
+    organization: Company
+    country: US
+    locality: California
+
+indexer:
+  enabled: true
+
+  generateCA: false

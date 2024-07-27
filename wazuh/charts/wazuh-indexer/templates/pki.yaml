@@ -1,0 +1,39 @@
+{{- if .Values.generateCA }}
+{{- include "wazuh.ca" . -}}
+{{- end }}
+{{- range $t := list "admin" "node" }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "wazuh-indexer.fullname" $ }}-{{ $t }}-cert
+  labels: {{ include "wazuh.labels" $ | nindent 4 }}
+spec:
+  secretName: "{{ include "wazuh-indexer.fullname" $ }}-{{ $t }}-cert"
+
+  secretTemplate:
+    labels: {{ include "wazuh-indexer.labels" $ | nindent 6 }}
+
+  isCA: false
+
+  commonName: "{{ include "wazuh-indexer.fullname" $ }}-{{ $t }}"
+
+  {{- with $.Values.global.certificateSubject }}
+  subject:
+    organizations: [{{ .organization }}]
+    countries: [{{ .country }}]
+    localities: [{{ .locality }}]
+  {{- end }}
+
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+
+  # Valid for 1 year
+  duration: 3600h
+
+  issuerRef:
+    name: {{ include "wazuh.fullname" $ }}-ca
+    kind: Issuer
+{{- end }}
